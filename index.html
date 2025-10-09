@@ -2361,9 +2361,49 @@ function obtenerHorario(fechaStr) {
 
     return horarioSemana;
 }
+let estaOcupado = false;
+
+function verificarDiaOcupado(fecha) {
+  const refDia = firebase.database().ref(`reservasPorDia/${fecha}`);
+
+  refDia.once("value").then(snapshot => {
+    const bloques = snapshot.val();
+
+    if (!bloques) {
+      estaOcupado = false;
+      return;
+    }
+
+    const horas = Object.keys(bloques);
+    let todasCompletas = true;
+
+    for (let hora of horas) {
+      const reservas = bloques[hora];
+      const cantidad = reservas ? Object.keys(reservas).length : 0;
+
+      if (cantidad < 10) {
+        todasCompletas = false;
+        break;
+      }
+    }
+
+    const elementoDia = document.getElementById(`dia-${fecha}`);
+    if (elementoDia) {
+      if (todasCompletas) {
+        elementoDia.classList.add("diaOcupado");
+        estaOcupado = true;
+      } else {
+        elementoDia.classList.remove("diaOcupado");
+        estaOcupado = false;
+      }
+    }
+  });
+}
+
 
     
      function generarCuadroCalendario() {
+      
     const mesStr = `${fechaActualCalendario.getFullYear()}-${String(fechaActualCalendario.getMonth() + 1).padStart(2, "0")}`;
     cuadroCalendario.innerHTML = "";
     const [anio, mes] = mesStr.split("-");
@@ -2403,7 +2443,7 @@ const diaSemana = fechaCelda.getDay(); // Esto obtiene el día de la semana (0=D
 const estaBloqueado = diasBloqueados.includes(fechaActual) || horarioDelDia.length === 0 || diasDeLaSemanaBloqueados.includes(diaSemana);
 
 // ...
-        const estaOcupado = horasReservadas.length >= horarioDelDia.length;
+       
 
         // **NUEVA LÓGICA:** Verificar si el día ya pasó
 
@@ -2720,45 +2760,61 @@ setTimeout(() => {
             elemento.addEventListener("touchend", () => clearTimeout(presionarTimer));
         }
 
-        const reservasRefMostrar = firebase.database().ref("reservas");
-        reservasRefMostrar.on("child_added", (snapshot) => {
-            const {
-                fecha,
-                hora,
-                nombre
-            } = snapshot.val();
-            const idBloque = `${fecha}-${hora}`;
-            if (document.getElementById(idBloque)) return;
-            const div = document.createElement("div");
-            div.className = "reserva-item";
-            div.id = idBloque;
-            const texto = document.createElement("span");
-            texto.textContent = `📅 ${fecha} ⏰ ${hora} - Reservada`;
-            const botonX = document.createElement("span");
-            botonX.textContent = " | ❌";
-            botonX.className = "boton-x";
-            botonX.title = "Eliminar esta hora";
-            botonX.onclick = () => {
-    // Obtén la clave (ID único) de la reserva
-    const reservaId = snapshot.key;
+     const reservasRefMostrar = firebase.database().ref("reservas");
 
-    // Crea la referencia para eliminar solo esta reserva específica
+reservasRefMostrar.on("child_added", (snapshot) => {
+  const { fecha, hora, nombre } = snapshot.val();
+  const idBloque = `${fecha}-${hora}`;
+
+  // Evitar duplicados
+  if (document.getElementById(idBloque)) return;
+
+  // Crear el bloque visual
+  const div = document.createElement("div");
+  div.className = "reserva-item";
+  div.id = idBloque;
+
+  const texto = document.createElement("span");
+  texto.textContent = `📅 ${fecha} ⏰ ${hora} - Cargando...`;
+
+  const botonX = document.createElement("span");
+  botonX.textContent = " | ❌";
+  botonX.className = "boton-x";
+  botonX.title = "Eliminar esta hora";
+
+  botonX.onclick = () => {
+    const reservaId = snapshot.key;
     const reservaRef = reservasRefMostrar.child(reservaId);
 
-    // Usa la referencia para eliminar
     reservaRef.remove()
-        .then(() => {
-            console.log("Reserva eliminada con éxito.");
-        })
-        .catch((error) => {
-            console.error("Error al eliminar la reserva:", error);
-        });
+      .then(() => {
+        console.log("Reserva eliminada con éxito.");
+        const bloque = document.getElementById(idBloque);
+        if (bloque) bloque.remove();
+      })
+      .catch((error) => {
+        console.error("Error al eliminar la reserva:", error);
+      });
+  };
 
-};
-            div.appendChild(texto);
-            div.appendChild(botonX);
-            listaReservas.appendChild(div);
-        });
+  div.appendChild(texto);
+  div.appendChild(botonX);
+  listaReservas.appendChild(div);
+
+  // Verificar cuántas reservas hay en esa hora
+  const refHora = firebase.database().ref(`reservasPorDia/${fecha}/${hora}`);
+  refHora.once("value").then(snapshotHora => {
+    const reservasHora = snapshotHora.val() || {};
+    const cantidad = Object.keys(reservasHora).length;
+
+    if (cantidad >= 10) {
+      texto.textContent = `📅 ${fecha} ⏰ ${hora} - ✅ Reservada (10/10 👤)`;
+      div.classList.add("reserva-completa");
+    } else {
+      texto.textContent = `📅 ${fecha} ⏰ ${hora} - ${cantidad}/10 👤`;
+    }
+  });
+});
 
         function mostrarBotonesX() {
             document.querySelectorAll(".boton-x").forEach(b => {
