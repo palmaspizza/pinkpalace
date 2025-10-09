@@ -409,7 +409,23 @@ document.addEventListener('DOMContentLoaded', function() {
         botonVistaCierre.onclick = abrirVistaCierre;
     }
 });
+function resetearTodosLosContadores() {
+  const ref = firebase.database().ref("reservasPorDia");
+
+  ref.once("value").then(snapshot => {
+    const dias = snapshot.val() || {};
+
+    Object.keys(dias).forEach(fecha => {
+      const horas = dias[fecha];
+      Object.keys(horas).forEach(hora => {
+        firebase.database().ref(`reservasPorDia/${fecha}/${hora}`).remove();
+      });
+    });
+  });
+}
+
 </script>
+
         <div id="modal-control" class="ventana-secreta fantasma">
             <div class="caja-misteriosa">
                 <h3>Control PINK PALACE</h3>
@@ -419,7 +435,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <br><br>
                 <button style="background-color: blue;" onclick="activarModoHorarios();">⚙️ Gestionar Horarios por Día</button>
                 <br><br>
-                <button style="background-color: purple;" onclick="cerrarModal('modal-control');borrarTodasLasHorasEnPantalla()">🧹 borrar TODAS las reservas</button>
+                <button style="background-color: purple;" onclick="cerrarModal('modal-control');borrarTodasLasHorasEnPantalla();resetearTodosLosContadores();">🧹 borrar TODAS las reservas</button>
                 <br><br>
                 <button onclick="actiwar();cerrarModal('modal-control');"  style="border: 2px solid white; color: #000; background: orange; text-shadow: #000 3px 3px 5px;" id="activarBloqueoDias">🔒 Marcar Días cerrados 1x1</button>
                 <button type="button" onclick="mostrarX();" style="border: 2px solid white; color: #000; background: lightslategrey; text-shadow: #000 3px 3px 5px;"  id="abrirVentanaVX"><span style="color: red;">CERRAR</span><span style="color: #fff;"> /</span>
@@ -846,7 +862,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     </script>
                 <br><br>
-                <button style="background-color: rgb(65, 65, 65);" onclick="borrarHorasMesHastaHoy()">📜 Borrar reservas antiguas del MES</button>
+                <button style="background-color: rgb(65, 65, 65);" onclick="borrarHorasMesHastaHoy();resetearTodosLosContadores();">📜 Borrar reservas antiguas del MES</button>
                 <br><br>
                 <button style="background: brown; color: white;" onclick="mostrarBotonBorrar();mostrarBotonesX();cerrarModal('modal-control');">❌ Eliminar reservas a elección </button>
                 <br><br>
@@ -971,7 +987,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <button id="botonAdministrar" style="background-color: darkgray; color: white; border: 2px solid red; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
   Administrar
 </button>
-<button hidden id="botonListo" onclick="ocultarTodosLosBotonesMenos();" style="background-color: darkgray; color: white; border: 2px solid red; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+<button hidden id="botonListo" style="background-color: darkgray; color: white; border: 2px solid red; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
   Listo
 </button>
 
