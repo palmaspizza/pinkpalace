@@ -2286,18 +2286,70 @@ const firebaseConfig = {
         let fechaActualCalendario = new Date();
         let fechaSeleccionadaParaConfigurar = "";
 // C:00BIAR HORARIO
-        const horarioSemana = ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00",  "18:00 a 19:00",  "19:00 a 20:00"];
-        const horarioDomingo = ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00",  "18:00 a 19:00",  "19:00 a 20:00"];
+
+
 const bloquesBase = ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00", "17:00 a 18:00",  "18:00 a 19:00",  "19:00 a 20:00"] // HORAS BASE
-        const horariosPorDia = {
-  0: ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00", "17:00 a 18:00",  "18:00 a 19:00",  "19:00 a 20:00"], // Domingo
-  1: ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00", "17:00 a 18:00",  "18:00 a 19:00",  "19:00 a 20:00"], // Lunes
-  2: ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00", "17:00 a 18:00",  "18:00 a 19:00",  "19:00 a 20:00"], // Martes
-  3: ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00", "17:00 a 18:00",  "18:00 a 19:00",  "19:00 a 20:00"], // Miércoles
-  4: ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00", "17:00 a 18:00",  "18:00 a 19:00",  "19:00 a 20:00"], // Jueves
-  5: ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00", "17:00 a 18:00",  "18:00 a 19:00",  "19:00 a 20:00"], // Viernes
-  6: ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00", "17:00 a 18:00",  "18:00 a 19:00",  "19:00 a 20:00"]  // Sábado
+ const horariosPorDia = {
+  0: [ // Lunes
+    { nombre: "🏋️ MUSCULACIÓN", hora: "08:00 a 09:00" },
+    { nombre: "💪 FULL BODY", hora: "09:00 a 10:00" },
+    { nombre: "⏱️ Horario libre", hora: "11:00 a 12:00" },
+    { nombre: "📝 EVALUACIÓN", hora: "17:00 a 18:00" },
+    { nombre: "🏋️ MUSCULACIÓN", hora: "18:00 a 19:00" },
+    { nombre: "👯 FIT CHICAS", hora: "19:00 a 20:00" },
+    { nombre: "🧘 YOGA", hora: "20:30 a 21:15" }
+  ],
+  1: [ // Martes
+    { nombre: "🏋️ MUSCULACIÓN", hora: "08:00 a 09:00" },
+    { nombre: "🦵 TREN INFERIOR", hora: "09:00 a 10:00" },
+    { nombre: "⏱️ Horario libre", hora: "11:00 a 12:00" },
+    { nombre: "📝 EVALUACIÓN", hora: "17:00 a 18:00" },
+    { nombre: "🏋️ MUSCULACIÓN", hora: "18:00 a 19:00" },
+    { nombre: "👯 FIT CHICAS", hora: "19:00 a 20:00" }
+  ],
+  2: [ // Miércoles
+    { nombre: "🏋️ MUSCULACIÓN", hora: "08:00 a 09:00" },
+    { nombre: "⏱️ Horario libre", hora: "09:00 a 10:00" },
+    { nombre: "⏱️ Horario libre", hora: "11:00 a 12:00" },
+    { nombre: "📝 EVALUACIÓN", hora: "17:00 a 18:00" },
+    { nombre: "🏋️ MUSCULACIÓN", hora: "18:00 a 19:00" },
+    { nombre: "💃 BAILANDO", hora: "19:00 a 20:00" },
+    { nombre: "🧘 YOGA", hora: "20:30 a 21:15" }
+  ],
+  3: [ // Jueves
+    { nombre: "🏋️ MUSCULACIÓN", hora: "08:00 a 09:00" },
+    { nombre: "💪 TREN SUPERIOR", hora: "09:00 a 10:00" },
+    { nombre: "⏱️ Horario libre", hora: "11:00 a 12:00" },
+    { nombre: "📝 EVALUACIÓN", hora: "17:00 a 18:00" },
+    { nombre: "🏋️ MUSCULACIÓN", hora: "18:00 a 19:00" },
+    { nombre: "👯 FIT CHICAS", hora: "19:00 a 20:00" }
+  ],
+  4: [ // Viernes
+    { nombre: "🏋️ MUSCULACIÓN", hora: "08:00 a 09:00" },
+    { nombre: "💪 FULL BODY", hora: "09:00 a 10:00" },
+    { nombre: "⏱️ Horario libre", hora: "11:00 a 12:00" },
+    { nombre: "📝 EVALUACIÓN", hora: "17:00 a 18:00" },
+    { nombre: "🏋️ MUSCULACIÓN", hora: "18:00 a 19:00" },
+    { nombre: "💃 BAILANDO", hora: "19:00 a 20:00" }
+  ],
+  5: [ // Sábado
+    { nombre: "🏋️ MUSCULACIÓN", hora: "08:00 a 09:00" },
+    { nombre: "⏱️ Horario libre", hora: "09:00 a 10:00" },
+    { nombre: "⏱️ Horario libre", hora: "11:00 a 12:00" },
+    { nombre: "📝 EVALUACIÓN", hora: "17:00 a 18:00" },
+    { nombre: "🏋️ MUSCULACIÓN", hora: "18:00 a 19:00" },
+    { nombre: "👯 FIT CHICAS", hora: "19:00 a 20:00" }
+  ],
+  6: [ // Domingo
+    { nombre: "🏋️ MUSCULACIÓN", hora: "08:00 a 09:00" },
+    { nombre: "⏱️ Horario libre", hora: "09:00 a 10:00" },
+    { nombre: "⏱️ Horario libre", hora: "11:00 a 12:00" },
+    { nombre: "📝 EVALUACIÓN", hora: "17:00 a 18:00" },
+    { nombre: "🏋️ MUSCULACIÓN", hora: "18:00 a 19:00" },
+    { nombre: "👯 FIT CHICAS", hora: "19:00 a 20:00" }
+  ]
 };
+
 
         const mesesTexto = [
             "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -2391,7 +2443,7 @@ function verificarDiaOcupado(fecha) {
 
     
      function generarCuadroCalendario() {
-      
+      obtenerHorarioDelDiaDesdeFecha(fecha);
     const mesStr = `${fechaActualCalendario.getFullYear()}-${String(fechaActualCalendario.getMonth() + 1).padStart(2, "0")}`;
     cuadroCalendario.innerHTML = "";
     const [anio, mes] = mesStr.split("-");
@@ -2888,7 +2940,7 @@ function cerrarVentanaAdminYMostrarBotones() {
     boton.classList.remove("botonmenos");
   });
 }
-
+const formateado = originalTexto.replace(" - ", "\n");
 
        function abrirVentanaHorarios(fecha) {
         
@@ -2906,6 +2958,7 @@ function cerrarVentanaAdminYMostrarBotones() {
     horarioDelDia.forEach(hora => {
       
       const bloque = document.createElement("div");
+      
 bloque.classList.add("bloqueHora");
 
 const reservasHora = reservasDelDia[hora] || {};
@@ -2936,7 +2989,8 @@ contador.innerHTML = `
 // 🕒 Texto de la hora
 const textoHora = document.createElement("span");
 textoHora.className = "horaTexto";
-textoHora.textContent = hora;
+textoHora.innerHTML = `<strong class="nombreClase">${hora.nombre || "Clase libre"}</strong><br>${hora.hora || ""}`;
+
 
 // ➖ Acción del botón menos
 botonMenos.onclick = (e) => {
@@ -3792,6 +3846,11 @@ img {
   /* Sombra de texto para que las letras floten */
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
+.horario {
+  white-space: pre-line;
+  font-family: sans-serif;
+  margin-bottom: 10px;
+}
 
 .boton-cambiar:hover {
   background-color: #FF4D4D; /* Rojo más intenso al pasar el mouse */
@@ -4050,5 +4109,14 @@ img {
     color: #fff; /* El color del texto en un gris más oscuro */
     cursor: not-allowed;
     pointer-events: none; /* Esto evita que se pueda hacer clic en el día */
-}</style>
+
+}
+
+.nombreClase {
+  text-decoration: underline;
+  text-decoration-color: white;
+  color: white; /* Asegúrate de que el texto también sea blanco */
+}
+
+</style>
 </html>
