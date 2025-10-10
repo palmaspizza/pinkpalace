@@ -984,12 +984,13 @@ document.addEventListener('DOMContentLoaded', function() {
         </style>
         <div id="modal-horarios" class="modalBarberia">
           <!-- Botón Administrar -->
-<button id="botonAdministrar" style="background-color: darkgray; color: aqua; border: 2px solid red; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
-  Administrar
-</button>
-<button hidden id="botonListo" style="background-color: darkgray; color: aqua; border: 2px solid red; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+           <button hidden id="botonListo" style="background-color: darkgray; color: white; border: 2px solid red; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
   Listo
 </button>
+<button  id="botonAdministrar" style="background-color: darkgray; color: red; border: 2px solid red; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+  Administrar
+</button>
+
 
 
 <script>
@@ -1057,7 +1058,7 @@ function mostrarBotonesMenos() {
 </div>
 
             <div style="background-color: #303030 !important; margin-top: 10px;"  class="contenidoModal">
-                <span id="cerrarVentana" class="cerrarModal">VOLVER 🕑</span>
+                <span id="cerrarVentana" class="cerrarModal">Volver🕑</span>
                 <br>
                 <h3 id="tituloVentana" class="titulo-animado" style="color: orangered; text-shadow: 1px 1px 1px #000;"></h3>
                 <h3 style="color: #fff      ;">Selecciona una clase</h3>
@@ -1282,7 +1283,7 @@ function ocultarBotonBorrar() {
 <form action="">
         <div id="modal-hora-personalizada" class="modal hidden">
         <div class="modal-content">
- <button id="cambiar-hora-btn">
+ <button hidden id="cambiar-hora-btn">
     <span style="text-shadow: #000 1px 1px 3px;"  class="icono-reloj">⏱️</span> Cambiar Hora
 </button>
             <br>
@@ -1290,7 +1291,7 @@ function ocultarBotonBorrar() {
 <b>           
             <input type="text" type="name" placeholder="Escribe tu nombre" id="nombre" oninput="miFuncion();">
             <br><br>
-            <button id="reservar-button" type="submit" onclick="enviarMensajeWhatsApp();window.location.reload()">Reservar</button>
+            <button id="reservar-button" type="submit" onclick="reservarHora();window.location.reload()">Reservar</button>
         </div>
     </div>
 </form>
@@ -2286,68 +2287,68 @@ const firebaseConfig = {
         let fechaActualCalendario = new Date();
         let fechaSeleccionadaParaConfigurar = "";
 // C:00BIAR HORARIO
-const bloquesBase = ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00", "17:00 a 18:00",  "18:00 a 19:00",  "19:00 a 20:00"] // HORAS BASE
+        const horarioSemana = ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00",  "18:00 a 19:00",  "19:00 a 20:00"];
+        const horarioDomingo = ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00",  "18:00 a 19:00",  "19:00 a 20:00"];
 const horariosPorDia = {
   0: [ // Lunes
-    "🏋️ MUSCULACIÓN - 08:00 a 09:00",
-    "💪 FULL BODY - 09:00 a 10:00",
-    "⏱️ Horario libre - 11:00 a 12:00",
-    "📝 EVALUACIÓN - 17:00 a 18:00",
-    "🏋️ MUSCULACIÓN - 18:00 a 19:00",
-    "👯 FIT CHICAS - 19:00 a 20:00",
-    "🧘 YOGA - 20:30 a 21:15"
+    "🏋️ MUSCULACIÓN - 08:00 a 09:00 |",
+    "💪 FULL BODY - 09:00 a 10:00 |",
+    "⏱️ Horario libre - 11:00 a 12:00 |",
+    "📝 EVALUACIÓN - 17:00 a 18:00 |",
+    "🏋️ MUSCULACIÓN - 18:00 a 19:00 |",
+    "👯 FIT CHICAS - 19:00 a 20:00 |",
+    "🧘 YOGA - 20:30 a 21:15 |"
   ],
   1: [ // Martes
-    "🏋️ MUSCULACIÓN - 08:00 a 09:00",
-    "🦵 TREN INFERIOR - 09:00 a 10:00",
-    "⏱️ Horario libre - 11:00 a 12:00",
-    "📝 EVALUACIÓN - 17:00 a 18:00",
-    "🏋️ MUSCULACIÓN - 18:00 a 19:00",
-    "👯 FIT CHICAS - 19:00 a 20:00"
+    "🏋️ MUSCULACIÓN - 08:00 a 09:00 |",
+    "🦵 TREN INFERIOR - 09:00 a 10:00 |",
+    "⏱️ Horario libre - 11:00 a 12:00 |",
+    "📝 EVALUACIÓN - 17:00 a 18:00 |",
+    "🏋️ MUSCULACIÓN - 18:00 a 19:00 |",
+    "👯 FIT CHICAS - 19:00 a 20:00 |"
   ],
   2: [ // Miércoles
-    "🏋️ MUSCULACIÓN - 08:00 a 09:00",
-    "⏱️ Horario libre - 09:00 a 10:00",
-    "⏱️ Horario libre - 11:00 a 12:00",
-    "📝 EVALUACIÓN - 17:00 a 18:00",
-    "🏋️ MUSCULACIÓN - 18:00 a 19:00",
-    "💃 BAILANDO - 19:00 a 20:00",
-    "🧘 YOGA - 20:30 a 21:15"
+    "🏋️ MUSCULACIÓN - 08:00 a 09:00 |",
+    "⏱️ Horario libre - 09:00 a 10:00 |",
+    "⏱️ Horario libre - 11:00 a 12:00 |",
+    "📝 EVALUACIÓN - 17:00 a 18:00 |",
+    "🏋️ MUSCULACIÓN - 18:00 a 19:00 |",
+    "💃 BAILANDO - 19:00 a 20:00 |",
+    "🧘 YOGA - 20:30 a 21:15 |"
   ],
   3: [ // Jueves
-    "🏋️ MUSCULACIÓN - 08:00 a 09:00",
-    "💪 TREN SUPERIOR - 09:00 a 10:00",
-    "⏱️ Horario libre - 11:00 a 12:00",
-    "📝 EVALUACIÓN - 17:00 a 18:00",
-    "🏋️ MUSCULACIÓN - 18:00 a 19:00",
-    "👯 FIT CHICAS - 19:00 a 20:00"
+    "🏋️ MUSCULACIÓN - 08:00 a 09:00 |",
+    "💪 TREN SUPERIOR - 09:00 a 10:00 |",
+    "⏱️ Horario libre - 11:00 a 12:00 |",
+    "📝 EVALUACIÓN - 17:00 a 18:00 |",
+    "🏋️ MUSCULACIÓN - 18:00 a 19:00 |",
+    "👯 FIT CHICAS - 19:00 a 20:00 |"
   ],
   4: [ // Viernes
-    "🏋️ MUSCULACIÓN - 08:00 a 09:00",
-    "💪 FULL BODY - 09:00 a 10:00",
-    "⏱️ Horario libre - 11:00 a 12:00",
-    "📝 EVALUACIÓN - 17:00 a 18:00",
-    "🏋️ MUSCULACIÓN - 18:00 a 19:00",
-    "💃 BAILANDO - 19:00 a 20:00"
+    "🏋️ MUSCULACIÓN - 08:00 a 09:00 |",
+    "💪 FULL BODY - 09:00 a 10:00 |",
+    "⏱️ Horario libre - 11:00 a 12:00 |",
+    "📝 EVALUACIÓN - 17:00 a 18:00 |",
+    "🏋️ MUSCULACIÓN - 18:00 a 19:00 |",
+    "💃 BAILANDO - 19:00 a 20:00 |"
   ],
   5: [ // Sábado
-    "🏋️ MUSCULACIÓN - 08:00 a 09:00",
-    "⏱️ Horario libre - 09:00 a 10:00",
-    "⏱️ Horario libre - 11:00 a 12:00",
-    "📝 EVALUACIÓN - 17:00 a 18:00",
-    "🏋️ MUSCULACIÓN - 18:00 a 19:00",
-    "👯 FIT CHICAS - 19:00 a 20:00"
+    "🏋️ MUSCULACIÓN - 08:00 a 09:00 |",
+    "⏱️ Horario libre - 09:00 a 10:00 |",
+    "⏱️ Horario libre - 11:00 a 12:00 |",
+    "📝 EVALUACIÓN - 17:00 a 18:00 |",
+    "🏋️ MUSCULACIÓN - 18:00 a 19:00 |",
+    "👯 FIT CHICAS - 19:00 a 20:00 |"
   ],
   6: [ // Domingo
-    "🏋️ MUSCULACIÓN - 08:00 a 09:00",
-    "⏱️ Horario libre - 09:00 a 10:00",
-    "⏱️ Horario libre - 11:00 a 12:00",
-    "📝 EVALUACIÓN - 17:00 a 18:00",
-    "🏋️ MUSCULACIÓN - 18:00 a 19:00",
-    "👯 FIT CHICAS - 19:00 a 20:00"
+    "🏋️ MUSCULACIÓN - 08:00 a 09:00 |",
+    "⏱️ Horario libre - 09:00 a 10:00 |",
+    "⏱️ Horario libre - 11:00 a 12:00 |",
+    "📝 EVALUACIÓN - 17:00 a 18:00 |",
+    "🏋️ MUSCULACIÓN - 18:00 a 19:00 |",
+    "👯 FIT CHICAS - 19:00 a 20:00 |"
   ]
 };
-
 
         const mesesTexto = [
             "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -2441,7 +2442,7 @@ function verificarDiaOcupado(fecha) {
 
     
      function generarCuadroCalendario() {
-      obtenerHorarioDelDiaDesdeFecha(fecha);
+      
     const mesStr = `${fechaActualCalendario.getFullYear()}-${String(fechaActualCalendario.getMonth() + 1).padStart(2, "0")}`;
     cuadroCalendario.innerHTML = "";
     const [anio, mes] = mesStr.split("-");
@@ -2977,11 +2978,17 @@ botonMenos.title = "Eliminar una persona de esta hora";
 
 // 🧮 Contador con estilo rojo/blanco
 const contador = document.createElement("span");
+
+// Generar un ID único basado en la hora (sin espacios ni dos puntos)
+const idContador = `contador-${hora.replace(/[^0-9]/g, "")}`;
+contador.id = idContador;
+
 contador.className = cantidadReservas >= capacidadMaxima ? "contadorLleno" : "contadorActivo";
 contador.innerHTML = `
   <span class="contadorIzquierda" style="color:red; font-weight:bold;">${cantidadReservas}</span>
-  <span class="contadorDerecha" style="color:white;">/10 👤</span>
+  <span class="contadorDerecha" style="color:white;">/10 👤|</span>
 `;
+
 
 // 🕒 Texto de la hora
 const textoHora = document.createElement("span");
@@ -2991,17 +2998,33 @@ textoHora.textContent = hora;
 // ➖ Acción del botón menos
 botonMenos.onclick = (e) => {
   e.stopPropagation();
+
   const ref = firebase.database().ref(`reservasPorDia/${fecha}/${hora}`);
   ref.once("value").then(snapshot => {
     const reservas = snapshot.val() || {};
     const nombres = Object.keys(reservas);
+
     if (nombres.length > 0) {
       const nombreAEliminar = nombres[0];
+
       firebase.database().ref(`reservasPorDia/${fecha}/${hora}/${nombreAEliminar}`).remove()
-        .then(() => abrirVentanaHorarios(fecha));
+        .then(() => {
+          // 🔄 Actualizar solo este contador
+          firebase.database().ref(`reservasPorDia/${fecha}/${hora}`).once("value").then(snapshot => {
+            const nuevasReservas = snapshot.val() || {};
+            const nuevaCantidad = Object.keys(nuevasReservas).length;
+
+            contador.innerHTML = `
+              <span class="contadorIzquierda" style="color:red; font-weight:bold;">${nuevaCantidad}</span>
+              <span class="contadorDerecha" style="color:white;">/10 👤|</span>
+            `;
+            contador.className = nuevaCantidad >= capacidadMaxima ? "contadorLleno" : "contadorActivo";
+          });
+        });
     }
   });
 };
+
 
 // 🧱 Armar el bloque visual
 bloque.appendChild(textoHora);
