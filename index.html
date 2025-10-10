@@ -997,7 +997,7 @@ document.addEventListener('DOMContentLoaded', function() {
 document.getElementById("botonAdministrar").onclick = () => {
   const clave = prompt("🔐 Ingresa la contraseña de administrador:");
 
-  if (clave === "1234") {
+  if (clave === "1188") {
     document.querySelectorAll(".botonmenos").forEach(boton => {
       boton.classList.remove("botonmenos");
     });
@@ -1060,7 +1060,7 @@ function mostrarBotonesMenos() {
                 <span id="cerrarVentana" class="cerrarModal">Cerrar</span>
                 <br>
                 <h3 id="tituloVentana" class="titulo-animado" style="color: orangered; text-shadow: 1px 1px 1px #000;"></h3>
-                <h3 style="color: #fff      ;">Selecciona la hora</h3>
+                <h3 style="color: #fff      ;">Selecciona una clase</h3>
                 <div id="horariosDisponibles"></div>
             </div>
         </div>
@@ -2286,10 +2286,18 @@ const firebaseConfig = {
         let fechaActualCalendario = new Date();
         let fechaSeleccionadaParaConfigurar = "";
 // C:00BIAR HORARIO
-        const horarioSemana = ["11:00", "12:00",  "1:00", "2:00", "3:00", "4:00", "5:00", "6:00", "7:00", "21:00"];
-        const horarioDomingo = ["11:00", "12:00",  "1:00", "2:00", "3:00", "4:00", "5:00", "6:00", "7:00", "21:00"];
-        const bloquesBase = ["11:00", "12:00",  "1:00", "2:00", "3:00", "4:00", "5:00", "6:00", "7:00", "21:00"];
-
+        const horarioSemana = ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00",  "18:00 a 19:00",  "19:00 a 20:00"];
+        const horarioDomingo = ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00",  "18:00 a 19:00",  "19:00 a 20:00"];
+const bloquesBase = ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00", "17:00 a 18:00",  "18:00 a 19:00",  "19:00 a 20:00"] // HORAS BASE
+        const horariosPorDia = {
+  0: ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00", "17:00 a 18:00",  "18:00 a 19:00",  "19:00 a 20:00"], // Domingo
+  1: ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00", "17:00 a 18:00",  "18:00 a 19:00",  "19:00 a 20:00"], // Lunes
+  2: ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00", "17:00 a 18:00",  "18:00 a 19:00",  "19:00 a 20:00"], // Martes
+  3: ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00", "17:00 a 18:00",  "18:00 a 19:00",  "19:00 a 20:00"], // Miércoles
+  4: ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00", "17:00 a 18:00",  "18:00 a 19:00",  "19:00 a 20:00"], // Jueves
+  5: ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00", "17:00 a 18:00",  "18:00 a 19:00",  "19:00 a 20:00"], // Viernes
+  6: ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00", "17:00 a 18:00",  "18:00 a 19:00",  "19:00 a 20:00"]  // Sábado
+};
 
         const mesesTexto = [
             "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -2332,35 +2340,15 @@ const firebaseConfig = {
         function ingresarllave() {
             document.getElementById("clave-input").value = '';
         }
+
     
-function obtenerHorario(fechaStr) {
-    const personalizado = horariosPersonalizados[fechaStr];
-    if (Array.isArray(personalizado)) return personalizado;
 
-    const dia = new Date(fechaStr).getDay();
-    if (dia === 0) return horarioDomingo;
-
-    return horarioSemana;
+function obtenerHorarioDelDiaDesdeFecha(fecha) {
+  const fechaObj = new Date(fecha);
+  const diaSemana = fechaObj.getDay(); // 0 = domingo, 1 = lunes, etc.
+  return horariosPorDia[diaSemana] || [];
 }
 
-  function obtenerHorarioDelDiaDesdeFecha(fechaStr) {
-    const partes = fechaStr.split("-");
-    const anio = parseInt(partes[0], 10);
-    const mes = parseInt(partes[1], 10);
-    const dia = parseInt(partes[2], 10);
-    const fechaObj = new Date(anio, mes - 1, dia);
-    const diaSemana = fechaObj.getDay();
-
-    if (horariosPersonalizados[fechaStr]) {
-        return horariosPersonalizados[fechaStr];
-    }
-
-    if (diaSemana === 0) {
-        return horarioDomingo;
-    }
-
-    return horarioSemana;
-}
 let estaOcupado = false;
 
 function verificarDiaOcupado(fecha) {
@@ -2427,11 +2415,12 @@ function verificarDiaOcupado(fecha) {
         celda.classList.add("diaCalendario");
         celda.textContent = dia;
 
+const horarioDelDia = obtenerHorarioDelDiaDesdeFecha(fechaActual);
+
         const horasReservadas = reservasPorDia[fechaActual] || [];
         
         
-     const horarioDelDia = obtenerHorarioDelDiaDesdeFecha(fechaActual);
-
+    
 
         // Dentro de la función generarCuadroCalendario()
 // ...
@@ -2719,7 +2708,7 @@ setTimeout(() => {
         function validarClave() {
             const claveInput = document.getElementById("clave-input");
             const clave = claveInput.value;
-            if (clave === "3331") {
+            if (clave === "1188") {
                 document.getElementById("modal-acceso").classList.add("fantasma");
                 document.getElementById("modal-control").classList.remove("fantasma");
                 claveInput.value = "";
@@ -2902,11 +2891,13 @@ function cerrarVentanaAdminYMostrarBotones() {
 
 
        function abrirVentanaHorarios(fecha) {
+        
   tituloVentana.textContent = `HORAS DISPONIBLES ${fecha}`;
   horariosDisponibles.innerHTML = "";
 
   const diaSemana = new Date(fecha).getDay(); // 0 = Domingo
   const horarioDelDia = obtenerHorarioDelDiaDesdeFecha(fecha);
+        
 
   // 🔥 Obtener reservas desde Firebase
   firebase.database().ref(`reservasPorDia/${fecha}`).once("value").then(snapshot => {
