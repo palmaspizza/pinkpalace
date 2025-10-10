@@ -937,7 +937,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <input type="date" id="fecha" hidden class="" required>
         
         <center>
-            <input hidden type="time" id="hora">
+            <input hidden type="text" id="hora">
             <div style="margin-bottom: 10px;"></div>
         </center>
         
@@ -1290,7 +1290,7 @@ function ocultarBotonBorrar() {
 <b>           
             <input type="text" type="name" placeholder="Escribe tu nombre" id="nombre" oninput="miFuncion();">
             <br><br>
-            <button id="reservar-button" type="submit" onclick="reservarHora();window.location.reload()">Reservar</button>
+            <button id="reservar-button" type="submit" onclick="enviarMensajeWhatsApp();window.location.reload()">Reservar</button>
         </div>
     </div>
 </form>
@@ -2286,67 +2286,65 @@ const firebaseConfig = {
         let fechaActualCalendario = new Date();
         let fechaSeleccionadaParaConfigurar = "";
 // C:00BIAR HORARIO
-
-
 const bloquesBase = ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00", "17:00 a 18:00",  "18:00 a 19:00",  "19:00 a 20:00"] // HORAS BASE
- const horariosPorDia = {
+const horariosPorDia = {
   0: [ // Lunes
-    { nombre: "🏋️ MUSCULACIÓN", hora: "08:00 a 09:00" },
-    { nombre: "💪 FULL BODY", hora: "09:00 a 10:00" },
-    { nombre: "⏱️ Horario libre", hora: "11:00 a 12:00" },
-    { nombre: "📝 EVALUACIÓN", hora: "17:00 a 18:00" },
-    { nombre: "🏋️ MUSCULACIÓN", hora: "18:00 a 19:00" },
-    { nombre: "👯 FIT CHICAS", hora: "19:00 a 20:00" },
-    { nombre: "🧘 YOGA", hora: "20:30 a 21:15" }
+    "🏋️ MUSCULACIÓN - 08:00 a 09:00",
+    "💪 FULL BODY - 09:00 a 10:00",
+    "⏱️ Horario libre - 11:00 a 12:00",
+    "📝 EVALUACIÓN - 17:00 a 18:00",
+    "🏋️ MUSCULACIÓN - 18:00 a 19:00",
+    "👯 FIT CHICAS - 19:00 a 20:00",
+    "🧘 YOGA - 20:30 a 21:15"
   ],
   1: [ // Martes
-    { nombre: "🏋️ MUSCULACIÓN", hora: "08:00 a 09:00" },
-    { nombre: "🦵 TREN INFERIOR", hora: "09:00 a 10:00" },
-    { nombre: "⏱️ Horario libre", hora: "11:00 a 12:00" },
-    { nombre: "📝 EVALUACIÓN", hora: "17:00 a 18:00" },
-    { nombre: "🏋️ MUSCULACIÓN", hora: "18:00 a 19:00" },
-    { nombre: "👯 FIT CHICAS", hora: "19:00 a 20:00" }
+    "🏋️ MUSCULACIÓN - 08:00 a 09:00",
+    "🦵 TREN INFERIOR - 09:00 a 10:00",
+    "⏱️ Horario libre - 11:00 a 12:00",
+    "📝 EVALUACIÓN - 17:00 a 18:00",
+    "🏋️ MUSCULACIÓN - 18:00 a 19:00",
+    "👯 FIT CHICAS - 19:00 a 20:00"
   ],
   2: [ // Miércoles
-    { nombre: "🏋️ MUSCULACIÓN", hora: "08:00 a 09:00" },
-    { nombre: "⏱️ Horario libre", hora: "09:00 a 10:00" },
-    { nombre: "⏱️ Horario libre", hora: "11:00 a 12:00" },
-    { nombre: "📝 EVALUACIÓN", hora: "17:00 a 18:00" },
-    { nombre: "🏋️ MUSCULACIÓN", hora: "18:00 a 19:00" },
-    { nombre: "💃 BAILANDO", hora: "19:00 a 20:00" },
-    { nombre: "🧘 YOGA", hora: "20:30 a 21:15" }
+    "🏋️ MUSCULACIÓN - 08:00 a 09:00",
+    "⏱️ Horario libre - 09:00 a 10:00",
+    "⏱️ Horario libre - 11:00 a 12:00",
+    "📝 EVALUACIÓN - 17:00 a 18:00",
+    "🏋️ MUSCULACIÓN - 18:00 a 19:00",
+    "💃 BAILANDO - 19:00 a 20:00",
+    "🧘 YOGA - 20:30 a 21:15"
   ],
   3: [ // Jueves
-    { nombre: "🏋️ MUSCULACIÓN", hora: "08:00 a 09:00" },
-    { nombre: "💪 TREN SUPERIOR", hora: "09:00 a 10:00" },
-    { nombre: "⏱️ Horario libre", hora: "11:00 a 12:00" },
-    { nombre: "📝 EVALUACIÓN", hora: "17:00 a 18:00" },
-    { nombre: "🏋️ MUSCULACIÓN", hora: "18:00 a 19:00" },
-    { nombre: "👯 FIT CHICAS", hora: "19:00 a 20:00" }
+    "🏋️ MUSCULACIÓN - 08:00 a 09:00",
+    "💪 TREN SUPERIOR - 09:00 a 10:00",
+    "⏱️ Horario libre - 11:00 a 12:00",
+    "📝 EVALUACIÓN - 17:00 a 18:00",
+    "🏋️ MUSCULACIÓN - 18:00 a 19:00",
+    "👯 FIT CHICAS - 19:00 a 20:00"
   ],
   4: [ // Viernes
-    { nombre: "🏋️ MUSCULACIÓN", hora: "08:00 a 09:00" },
-    { nombre: "💪 FULL BODY", hora: "09:00 a 10:00" },
-    { nombre: "⏱️ Horario libre", hora: "11:00 a 12:00" },
-    { nombre: "📝 EVALUACIÓN", hora: "17:00 a 18:00" },
-    { nombre: "🏋️ MUSCULACIÓN", hora: "18:00 a 19:00" },
-    { nombre: "💃 BAILANDO", hora: "19:00 a 20:00" }
+    "🏋️ MUSCULACIÓN - 08:00 a 09:00",
+    "💪 FULL BODY - 09:00 a 10:00",
+    "⏱️ Horario libre - 11:00 a 12:00",
+    "📝 EVALUACIÓN - 17:00 a 18:00",
+    "🏋️ MUSCULACIÓN - 18:00 a 19:00",
+    "💃 BAILANDO - 19:00 a 20:00"
   ],
   5: [ // Sábado
-    { nombre: "🏋️ MUSCULACIÓN", hora: "08:00 a 09:00" },
-    { nombre: "⏱️ Horario libre", hora: "09:00 a 10:00" },
-    { nombre: "⏱️ Horario libre", hora: "11:00 a 12:00" },
-    { nombre: "📝 EVALUACIÓN", hora: "17:00 a 18:00" },
-    { nombre: "🏋️ MUSCULACIÓN", hora: "18:00 a 19:00" },
-    { nombre: "👯 FIT CHICAS", hora: "19:00 a 20:00" }
+    "🏋️ MUSCULACIÓN - 08:00 a 09:00",
+    "⏱️ Horario libre - 09:00 a 10:00",
+    "⏱️ Horario libre - 11:00 a 12:00",
+    "📝 EVALUACIÓN - 17:00 a 18:00",
+    "🏋️ MUSCULACIÓN - 18:00 a 19:00",
+    "👯 FIT CHICAS - 19:00 a 20:00"
   ],
   6: [ // Domingo
-    { nombre: "🏋️ MUSCULACIÓN", hora: "08:00 a 09:00" },
-    { nombre: "⏱️ Horario libre", hora: "09:00 a 10:00" },
-    { nombre: "⏱️ Horario libre", hora: "11:00 a 12:00" },
-    { nombre: "📝 EVALUACIÓN", hora: "17:00 a 18:00" },
-    { nombre: "🏋️ MUSCULACIÓN", hora: "18:00 a 19:00" },
-    { nombre: "👯 FIT CHICAS", hora: "19:00 a 20:00" }
+    "🏋️ MUSCULACIÓN - 08:00 a 09:00",
+    "⏱️ Horario libre - 09:00 a 10:00",
+    "⏱️ Horario libre - 11:00 a 12:00",
+    "📝 EVALUACIÓN - 17:00 a 18:00",
+    "🏋️ MUSCULACIÓN - 18:00 a 19:00",
+    "👯 FIT CHICAS - 19:00 a 20:00"
   ]
 };
 
@@ -2940,7 +2938,7 @@ function cerrarVentanaAdminYMostrarBotones() {
     boton.classList.remove("botonmenos");
   });
 }
-const formateado = originalTexto.replace(" - ", "\n");
+
 
        function abrirVentanaHorarios(fecha) {
         
@@ -2958,7 +2956,6 @@ const formateado = originalTexto.replace(" - ", "\n");
     horarioDelDia.forEach(hora => {
       
       const bloque = document.createElement("div");
-      
 bloque.classList.add("bloqueHora");
 
 const reservasHora = reservasDelDia[hora] || {};
@@ -2989,8 +2986,7 @@ contador.innerHTML = `
 // 🕒 Texto de la hora
 const textoHora = document.createElement("span");
 textoHora.className = "horaTexto";
-textoHora.innerHTML = `<strong class="nombreClase">${hora.nombre || "Clase libre"}</strong><br>${hora.hora || ""}`;
-
+textoHora.textContent = hora;
 
 // ➖ Acción del botón menos
 botonMenos.onclick = (e) => {
@@ -3846,11 +3842,6 @@ img {
   /* Sombra de texto para que las letras floten */
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
-.horario {
-  white-space: pre-line;
-  font-family: sans-serif;
-  margin-bottom: 10px;
-}
 
 .boton-cambiar:hover {
   background-color: #FF4D4D; /* Rojo más intenso al pasar el mouse */
@@ -4109,14 +4100,5 @@ img {
     color: #fff; /* El color del texto en un gris más oscuro */
     cursor: not-allowed;
     pointer-events: none; /* Esto evita que se pueda hacer clic en el día */
-
-}
-
-.nombreClase {
-  text-decoration: underline;
-  text-decoration-color: white;
-  color: white; /* Asegúrate de que el texto también sea blanco */
-}
-
-</style>
+}</style>
 </html>
