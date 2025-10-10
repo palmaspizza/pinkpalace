@@ -59,6 +59,9 @@
         </div>
         <button id="solicitar" hidden>Solicitar notificaciones</button>
 <script>
+
+let diasDeLaSemanaBloqueados = []; // debe ser let para poder actualizarla
+
   async function enviar() {
     try {
       const response = await window.fetch('http://localhost:3000/enviar-notificaciones', {
@@ -384,7 +387,17 @@ function mostrar(){
                      <button style="background-color: green;" onclick="validarClave();ingresarllave();">Ingresar</button>
               </div>
         </div>
+        <div id="ventanaEditarTexto" style="display:none; position:fixed; top:30%; left:50%; transform:translate(-50%, -50%); background:#fff; border:2px solid #ccc; padding:20px; z-index:1000;">
+  <h3>Editar texto del bloque</h3>
+  <input type="text" id="inputTextoBloque" style="width:100%; margin-bottom:10px;" />
+  <button onclick="guardarTextoBloque()">Guardar</button>
+  <button onclick="cerrarVentanaEditarTexto()">Cancelar</button>
+</div>
+
 <script>
+  let fechaBloqueActual = "";
+let horaBloqueActual = "";
+
     // La función que ya tienes para cerrar la modal principal
 function cerrarModal(id) {
     document.getElementById(id).style.display = 'none';
@@ -829,20 +842,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
  
         
-        function cerrarDiaDeLaSemana(dia) {
-            if (!diasDeLaSemanaBloqueados.includes(dia)) {
-                diasDeLaSemanaBloqueados.push(dia);
-            }
-            generarCuadroCalendario();
-        }
+ function cerrarDiaDeLaSemana(dia) {
+  firebase.database().ref(`diasSemanaBloqueados/${dia}`).set(true);
+}
 
-        function habilitarDiaDeLaSemana(dia) {
-            const index = diasDeLaSemanaBloqueados.indexOf(dia);
-            if (index > -1) {
-                diasDeLaSemanaBloqueados.splice(index, 1);
-            }
-            generarCuadroCalendario();
-        }
+function habilitarDiaDeLaSemana(dia) {
+  firebase.database().ref(`diasSemanaBloqueados/${dia}`).remove();
+}
+
+
 
         document.addEventListener('DOMContentLoaded', function() {
             generarCuadroCalendario();
@@ -1283,9 +1291,7 @@ function ocultarBotonBorrar() {
 <form action="">
         <div id="modal-hora-personalizada" class="modal hidden">
         <div class="modal-content">
- <button hidden id="cambiar-hora-btn">
-    <span style="text-shadow: #000 1px 1px 3px;"  class="icono-reloj">⏱️</span> Cambiar Hora
-</button>
+
             <br>
             <p style="text-shadow: #000 1px 1px 3px;">Se te redireccionará a <span style="text-shadow: #000 1px 1px 3px;  color: green;">WhatsApp</span></p>
 <b>           
@@ -2240,6 +2246,63 @@ document.getElementById('reservar').addEventListener('click', async () => {
   });
 });
 
+
+
+function mostrarBloque(hora, texto, fecha) {
+  const div = document.createElement("div");
+  div.classList.add("bloqueHora");
+  div.textContent = texto;
+
+  const botonEditar = document.createElement("button");
+  botonEditar.textContent = "✏️ Editar";
+  botonEditar.style.marginLeft = "10px";
+  botonEditar.onclick = () => abrirVentanaEditarTexto(fecha, hora, texto);
+
+  div.appendChild(botonEditar);
+  document.getElementById("horariosDisponibles").appendChild(div);
+}
+
+
+function abrirVentanaEditarTexto(fecha, hora, textoActual) {
+  fechaBloqueActual = fecha;
+  horaBloqueActual = hora;
+  document.getElementById("inputTextoBloque").value = textoActual;
+  document.getElementById("ventanaEditarTexto").style.display = "block";
+}
+
+function cerrarVentanaEditarTexto() {
+  document.getElementById("ventanaEditarTexto").style.display = "none";
+}
+
+
+function editarTextoBloque(fecha, hora, textoActual) {
+  const nuevoTexto = prompt(`Editar texto para ${hora}:`, textoActual);
+  if (nuevoTexto !== null && nuevoTexto.trim() !== "") {
+    guardarTextoBloque(fecha, hora, nuevoTexto);
+  }
+}
+
+function guardarTextoBloque(fecha, hora, texto) {
+  const ref = firebase.database().ref(`bloquesTextoPorDia/${fecha}/${hora}`);
+  ref.set(texto).then(() => {
+    abrirVentanaHorarios(fecha); // recarga los bloques con el nuevo texto
+  });
+}
+
+
+function cargarTextosDeBloques(fecha, horarioDelDia) {
+  const bloquesTextoRef = firebase.database().ref(`bloquesTextoPorDia/${fecha}`);
+
+  bloquesTextoRef.once("value").then(snapshot => {
+    const textos = snapshot.val() || {};
+
+    horarioDelDia.forEach(hora => {
+      const texto = textos[hora] || `Horario Libre ${hora}`;
+      mostrarBloque(hora, texto, fecha); // tu función para mostrar el bloque
+    });
+  });
+}
+
 </script>
     <script>
 
@@ -2257,6 +2320,12 @@ const firebaseConfig = {
 
 
         firebase.initializeApp(firebaseConfig);
+        firebase.database().ref("diasSemanaBloqueados").on("value", snapshot => {
+  const data = snapshot.val() || {};
+  diasDeLaSemanaBloqueados = Object.keys(data).map(Number);
+  generarCuadroCalendario(); // actualiza el calendario
+});
+
         const db = firebase.database();
         const reservasRef = db.ref("reservas");
         const horariosRef = db.ref("horarios"); // Nueva referencia para los horarios personalizados
@@ -2286,6 +2355,20 @@ const firebaseConfig = {
         let reservasPorDia = {};
         let fechaActualCalendario = new Date();
         let fechaSeleccionadaParaConfigurar = "";
+
+        // 2. Referencia a los días bloqueados
+const diasSemanaBloqueadosRef = firebase.database().ref("diasSemanaBloqueados");
+ // debe ser let para poder actualizarla
+
+// 3. Escucha los cambios en Firebase
+diasSemanaBloqueadosRef.on("value", snapshot => {
+  const data = snapshot.val() || {};
+  diasDeLaSemanaBloqueados = Object.keys(data).map(Number);
+  generarCuadroCalendario(); // actualiza el calendario con los días bloqueados
+});
+
+// 4. Llamas a otras funciones de carga si es necesario
+
 // C:00BIAR HORARIO
         const horarioSemana = ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00",  "18:00 a 19:00",  "19:00 a 20:00"];
         const horarioDomingo = ["08:00 a 09:00", "09:00 a 10:00",  "11:00 a 12:00",  "18:00 a 19:00",  "19:00 a 20:00"];
@@ -2309,7 +2392,7 @@ const horariosPorDia = {
   ],
   2: [ // Miércoles
     "🏋️ MUSCULACIÓN - 08:00 a 09:00 |",
-    "⏱️ Horario libre - 09:00 a 10:00 |",
+    "💪 FULL BODY - 09:00 a 10:00 |",
     "⏱️ Horario libre - 11:00 a 12:00 |",
     "📝 EVALUACIÓN - 17:00 a 18:00 |",
     "🏋️ MUSCULACIÓN - 18:00 a 19:00 |",
@@ -2333,12 +2416,12 @@ const horariosPorDia = {
     "💃 BAILANDO - 19:00 a 20:00 |"
   ],
   5: [ // Sábado
-    "🏋️ MUSCULACIÓN - 08:00 a 09:00 |",
+    "⏱️ Horario libre 08:00 a 09:00 |",
     "⏱️ Horario libre - 09:00 a 10:00 |",
     "⏱️ Horario libre - 11:00 a 12:00 |",
-    "📝 EVALUACIÓN - 17:00 a 18:00 |",
-    "🏋️ MUSCULACIÓN - 18:00 a 19:00 |",
-    "👯 FIT CHICAS - 19:00 a 20:00 |"
+    "⏱️ Horario libre 17:00 a 18:00 |",
+    "⏱️ Horario libre 18:00 a 19:00 |",
+    "⏱️ Horario libre 19:00 a 20:00 |"
   ],
   6: [ // Domingo
     "🏋️ MUSCULACIÓN - 08:00 a 09:00 |",
@@ -2442,7 +2525,8 @@ function verificarDiaOcupado(fecha) {
 
     
      function generarCuadroCalendario() {
-      
+
+
     const mesStr = `${fechaActualCalendario.getFullYear()}-${String(fechaActualCalendario.getMonth() + 1).padStart(2, "0")}`;
     cuadroCalendario.innerHTML = "";
     const [anio, mes] = mesStr.split("-");
@@ -2466,7 +2550,7 @@ function verificarDiaOcupado(fecha) {
         celda.classList.add("diaCalendario");
         celda.textContent = dia;
 
-const horarioDelDia = obtenerHorarioDelDiaDesdeFecha(fechaActual);
+
 
         const horasReservadas = reservasPorDia[fechaActual] || [];
         
@@ -2475,34 +2559,33 @@ const horarioDelDia = obtenerHorarioDelDiaDesdeFecha(fechaActual);
 
         // Dentro de la función generarCuadroCalendario()
 // ...
-
+const horarioDelDia = obtenerHorarioDelDiaDesdeFecha(fechaActual);
 const fechaCelda = new Date(anio, mes - 1, dia);
-const diaSemana = fechaCelda.getDay(); // Esto obtiene el día de la semana (0=Domingo, 1=Lunes, etc.)
+const diaSemana = fechaCelda.getDay();
 
-// Modifique la línea siguiente:
-const estaBloqueado = diasBloqueados.includes(fechaActual) || horarioDelDia.length === 0 || diasDeLaSemanaBloqueados.includes(diaSemana);
+const estaBloqueado = diasBloqueados.includes(fechaActual) ||
+                      horarioDelDia.length === 0 ||
+                      diasDeLaSemanaBloqueados.includes(diaSemana);
 
-// ...
-       
+const estaOcupado = horasReservadas.length >= horarioDelDia.length;
+const diaPasado = fechaCelda < hoy;
 
-        // **NUEVA LÓGICA:** Verificar si el día ya pasó
+// Aplicar clases visuales
+if (diaPasado) {
+  celda.classList.add("diaPasado");
+  celda.title = "Este día ya ha pasado";
+} else if (estaBloqueado) {
+  celda.classList.add("diaBloqueado");
+  celda.title = "Día bloqueado por el administrador";
+  celda.style.pointerEvents = "none";
+} else if (estaOcupado) {
+  celda.classList.add("diaOcupado");
+  celda.title = "Día con todas las horas reservadas";
+} else {
+  celda.classList.add("diaLibre");
+  celda.title = "Día disponible";
+}
 
-        const diaPasado = fechaCelda < hoy;
-
-        // Modificar las clases para el estado del día
-        if (diaPasado) {
-            celda.classList.add("diaPasado");
-            celda.title = "Este día ya ha pasado";
-        } else if (estaBloqueado) {
-            celda.classList.add("diaBloqueado");
-            celda.title = "Día bloqueado por el administrador";
-        } else if (estaOcupado) {
-            celda.classList.add("diaOcupado");
-            celda.title = "Día con todas las horas reservadas";
-        } else {
-            celda.classList.add("diaLibre");
-            celda.title = "Día disponible";
-        }
         
         // **NUEVA LÓGICA:** Deshabilitar el clic si el día ya pasó
         if (diaPasado || (!modoBloqueoDias && estaBloqueado)) {
@@ -2539,23 +2622,11 @@ const estaBloqueado = diasBloqueados.includes(fechaActual) || horarioDelDia.leng
         cuadroCalendario.appendChild(celda);
     }
 }
+const diasDeLaSemanaBloqueadosRef = firebase.database().ref("diasDeLaSemanaBloqueados");
 
-const diasDeLaSemanaBloqueados = [];
 
-function cerrarDiaDeLaSemana(dia) {
-    if (!diasDeLaSemanaBloqueados.includes(dia)) {
-        diasDeLaSemanaBloqueados.push(dia);
-    }
-    generarCuadroCalendario();
-}
 
-function habilitarDiaDeLaSemana(dia) {
-    const indice = diasDeLaSemanaBloqueados.indexOf(dia);
-    if (indice > -1) {
-        diasDeLaSemanaBloqueados.splice(indice, 1);
-    }
-    generarCuadroCalendario();
-}
+
         function actualizarBarraMes() {
             const mes = fechaActualCalendario.getMonth();
             const año = fechaActualCalendario.getFullYear();
