@@ -1329,7 +1329,7 @@ function ocultarBotonBorrar() {
 <b>           
             <input type="text" type="name" placeholder="Escribe tu nombre" id="nombre" oninput="miFuncion();">
             <br><br>
-            <button id="reservar-button" type="submit" onclick="enviarPorWhatsApp();window.location.reload()">Reservar</button>
+            <button id="reservar-button" type="submit" onclick="reservarHora();enviarPorWhatsApp();window.location.reload()">Reservar</button>
         </div>
     </div>
 </form>
@@ -2935,6 +2935,7 @@ reservasRefMostrar.on("child_added", (snapshot) => {
   botonX.onclick = () => {
     const reservaId = snapshot.key;
     const reservaRef = reservasRefMostrar.child(reservaId);
+eliminarReservaDesdeLista(fecha, hora);
 
     reservaRef.remove()
       .then(() => {
@@ -3049,6 +3050,21 @@ function cerrarVentanaAdminYMostrarBotones() {
     boton.classList.remove("botonmenos");
   });
 }
+function eliminarReservaDesdeLista(fecha, hora) {
+  const ref = firebase.database().ref(`reservasPorDia/${fecha}/${hora}`);
+  ref.remove().then(() => {
+    // 🔄 Actualizar el contador del bloque correspondiente
+    const idContador = `contador-${hora.replace(/[^0-9]/g, "")}`;
+    const contadorEl = document.getElementById(idContador);
+    if (contadorEl) {
+      contadorEl.innerHTML = `
+        <span class="contadorIzquierda" style="color:red; font-weight:bold;">0</span>
+        <span class="contadorDerecha" style="color:white;">/10 👤</span>
+      `;
+      contadorEl.className = "contadorActivo";
+    }
+  });
+}
 
 
       function abrirVentanaHorarios(fecha) {
@@ -3082,7 +3098,8 @@ function cerrarVentanaAdminYMostrarBotones() {
         // 🧮 Contador
         const contador = document.createElement("span");
         const idContador = `contador-${hora.replace(/[^0-9]/g, "")}`;
-        contador.id = idContador;
+contador.id = idContador;
+
         contador.className = cantidadReservas >= capacidadMaxima ? "contadorLleno" : "contadorActivo";
         contador.innerHTML = `
           <span class="contadorIzquierda" style="color:red; font-weight:bold;">${cantidadReservas}</span>
@@ -3145,27 +3162,31 @@ botonEditar.onclick = (e) => {
         if (cantidadReservas < capacidadMaxima) {
           bloque.classList.add("horaLibre");
           bloque.onclick = () => {
-            const nombrePersona = "usuario_" + Math.floor(Math.random() * 10000);
-const ref = firebase.database().ref(`reservasPorDia/${fecha}/${hora}`);
+  const nombrePersona = "usuario_" + Math.floor(Math.random() * 10000);
+  const ref = firebase.database().ref(`reservasPorDia/${fecha}/${hora}`);
 
-ref.once('value').then(snapshot => {
-  const reservasActuales = snapshot.val() || {};
+  ref.once('value').then(snapshot => {
+    const reservasActuales = snapshot.val() || {};
 
-  if (!reservasActuales[nombrePersona]) {
-    const nuevaReserva = {};
-    nuevaReserva[nombrePersona] = true;
-    ref.update(nuevaReserva).then(() => {
-      
+    if (!reservasActuales[nombrePersona]) {
+      const nuevaReserva = {};
+      nuevaReserva[nombrePersona] = true;
+      ref.update(nuevaReserva).then(() => {
+        abrirVentanaHorarios(fecha);
+      });
+    } else {
       abrirVentanaHorarios(fecha);
-    });
-  } else {
-    // ✅ Ya estaba reservado, pero igual enviamos el mensaje
-    abrirVentanaHorarios(fecha);
-  }
-});
+    }
+  });
+  // ✅ Escribir en el input
+document.getElementById("hora").value = textoPersonalizado;
+
+  fechaInput.value = fecha;
+  document.getElementById("modal-hora-personalizada").classList.remove("hidden");
+  ventanaHorarios.style.display = "none";
 
 
-            document.getElementById("hora").value = hora;
+            
             fechaInput.value = fecha;
             document.getElementById("modal-hora-personalizada").classList.remove("hidden");
             ventanaHorarios.style.display = "none";
@@ -3219,19 +3240,18 @@ ref.once('value').then(snapshot => {
       function enviarPorWhatsApp() {
   const nombre = document.getElementById("nombre")?.value.trim();
   const fecha = fechaInput.value;
-  const hora = document.getElementById("hora").value;
+  const horaTexto = document.getElementById("hora")?.value.trim(); // ← ahora incluye emoji + categoría + hora
 
-  if (!nombre || !fecha || !hora) {
+  if (!nombre || !fecha || !horaTexto) {
     alert("Faltan datos: asegúrate de ingresar nombre, fecha y hora");
     return;
   }
 
-  const numeroDestino = "56944680449";
-  const mensaje = `Hola, soy ${nombre}. Quiero reservar para el día ${fecha} a las ${hora}.`;
+  const numeroDestino = "56944680449"; // ← tu número sin "+" ni espacios
+  const mensaje = `Hola, soy ${nombre}. Quiero reservar para el día ${fecha} en el horario: ${horaTexto}.`;
   const url = `https://wa.me/${numeroDestino}?text=${encodeURIComponent(mensaje)}`;
   window.open(url, "_blank");
 }
-
 
 
         // NUEVA FUNCIONALIDAD: GESTIÓN DE HORARIOS PERSONALIZADOS
