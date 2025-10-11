@@ -387,18 +387,39 @@ function mostrar(){
                      <button style="background-color: green;" onclick="validarClave();ingresarllave();">Ingresar</button>
               </div>
         </div>
-        <div id="ventanaEditarTexto" style="display:none; position:fixed; top:30%; left:50%; transform:translate(-50%, -50%); background:#fff; border:2px solid #ccc; padding:20px; z-index:1000;">
-  <h3>Editar texto del bloque</h3>
+     <div id="ventanaEditarTexto" style="display:none; position:fixed; top:30%; left:50%; transform:translate(-50%, -50%); background:#fff; border:2px solid #ccc; padding:20px; z-index:1000;">
+  <h3>Editar nombre del bloque</h3>
   <input type="text" id="inputTextoBloque" style="width:100%; margin-bottom:10px;" />
-  <button onclick="guardarTextoBloque()">Guardar</button>
+  <button id="btnConfirmarTexto" onclick="location.reload();guardarTextoBloque();">Confirmar</button>
   <button onclick="cerrarVentanaEditarTexto()">Cancelar</button>
 </div>
+
 
 <script>
   let fechaBloqueActual = "";
 let horaBloqueActual = "";
-
+let elementoTextoBloque = null; 
     // La función que ya tienes para cerrar la modal principal
+
+    function abrirVentanaEditarTexto(fecha, hora, textoActual, elementoTexto) {
+  fechaBloqueActual = fecha;
+  horaBloqueActual = hora;
+  elementoTextoBloque = elementoTexto;
+  document.getElementById("inputTextoBloque").value = textoActual;
+  document.getElementById("ventanaEditarTexto").style.display = "block";
+}
+
+
+
+function cerrarVentanaEditarTexto() {
+  document.getElementById("ventanaEditarTexto").style.display = "none";
+  fechaBloqueActual = "";
+  horaBloqueActual = "";
+  elementoTextoBloque = null;
+}
+
+
+
 function cerrarModal(id) {
     document.getElementById(id).style.display = 'none';
 }
@@ -1009,11 +1030,22 @@ document.getElementById("botonAdministrar").onclick = () => {
   if (clave === "1188") {
     document.querySelectorAll(".botonmenos").forEach(boton => {
       boton.classList.remove("botonmenos");
+      mostrarBotonesEditarTexto();
     });
   } else {
     alert("❌ Contraseña incorrecta");
   }
 };
+
+
+
+
+function mostrarBotonesEditarTexto() {
+  const botones = document.querySelectorAll(".botonEditarTexto");
+  botones.forEach(boton => {
+    boton.style.display = "block";
+  });
+}
 
 
 function ocultarTodosLosBotonesMenos() {
@@ -1297,7 +1329,7 @@ function ocultarBotonBorrar() {
 <b>           
             <input type="text" type="name" placeholder="Escribe tu nombre" id="nombre" oninput="miFuncion();">
             <br><br>
-            <button id="reservar-button" type="submit" onclick="reservarHora();window.location.reload()">Reservar</button>
+            <button id="reservar-button" type="submit" onclick="enviarPorWhatsApp();window.location.reload()">Reservar</button>
         </div>
     </div>
 </form>
@@ -2087,6 +2119,17 @@ img {
 }
 
 
+.botonEditarTexto {
+  background-color: rgb(136, 0, 136);
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 5px 10px;
+  margin-left: 10px;
+  cursor: pointer;
+  display: none;
+}
+
 
 /* ⏰ Horarios */
 .bloqueHora {
@@ -2248,19 +2291,6 @@ document.getElementById('reservar').addEventListener('click', async () => {
 
 
 
-function mostrarBloque(hora, texto, fecha) {
-  const div = document.createElement("div");
-  div.classList.add("bloqueHora");
-  div.textContent = texto;
-
-  const botonEditar = document.createElement("button");
-  botonEditar.textContent = "✏️ Editar";
-  botonEditar.style.marginLeft = "10px";
-  botonEditar.onclick = () => abrirVentanaEditarTexto(fecha, hora, texto);
-
-  div.appendChild(botonEditar);
-  document.getElementById("horariosDisponibles").appendChild(div);
-}
 
 
 function abrirVentanaEditarTexto(fecha, hora, textoActual) {
@@ -2281,13 +2311,22 @@ function editarTextoBloque(fecha, hora, textoActual) {
     guardarTextoBloque(fecha, hora, nuevoTexto);
   }
 }
+document.getElementById("btnConfirmarTexto").onclick = guardarTextoBloque;
 
-function guardarTextoBloque(fecha, hora, texto) {
-  const ref = firebase.database().ref(`bloquesTextoPorDia/${fecha}/${hora}`);
-  ref.set(texto).then(() => {
-    abrirVentanaHorarios(fecha); // recarga los bloques con el nuevo texto
+
+function guardarTextoBloque() {
+  const nuevoTexto = document.getElementById("inputTextoBloque").value.trim();
+  if (!fechaBloqueActual || !horaBloqueActual || nuevoTexto === "") return;
+
+  const ref = firebase.database().ref(`bloquesTextoPorDia/${fechaBloqueActual}/${horaBloqueActual}`);
+  ref.set(nuevoTexto).then(() => {
+    if (elementoTextoBloque) {
+      elementoTextoBloque.textContent = nuevoTexto;
+    }
+    cerrarVentanaEditarTexto();
   });
 }
+
 
 
 function cargarTextosDeBloques(fecha, horarioDelDia) {
@@ -2297,7 +2336,7 @@ function cargarTextosDeBloques(fecha, horarioDelDia) {
     const textos = snapshot.val() || {};
 
     horarioDelDia.forEach(hora => {
-      const texto = textos[hora] || `Horario Libre ${hora}`;
+      const texto = textos[hora] || `${hora}`;
       mostrarBloque(hora, texto, fecha); // tu función para mostrar el bloque
     });
   });
@@ -3012,122 +3051,136 @@ function cerrarVentanaAdminYMostrarBotones() {
 }
 
 
-       function abrirVentanaHorarios(fecha) {
-        
+      function abrirVentanaHorarios(fecha) {
   tituloVentana.textContent = `HORAS DISPONIBLES ${fecha}`;
   horariosDisponibles.innerHTML = "";
 
   const diaSemana = new Date(fecha).getDay(); // 0 = Domingo
   const horarioDelDia = obtenerHorarioDelDiaDesdeFecha(fecha);
-        
 
-  // 🔥 Obtener reservas desde Firebase
   firebase.database().ref(`reservasPorDia/${fecha}`).once("value").then(snapshot => {
     const reservasDelDia = snapshot.val() || {};
 
     horarioDelDia.forEach(hora => {
-      
-      const bloque = document.createElement("div");
-bloque.classList.add("bloqueHora");
+      const reservasHora = reservasDelDia[hora] || {};
+      const cantidadReservas = Object.keys(reservasHora).length;
+      const capacidadMaxima = 10;
 
-const reservasHora = reservasDelDia[hora] || {};
-const cantidadReservas = Object.keys(reservasHora).length;
-const capacidadMaxima = 10;
+      // 🔥 Obtener texto personalizado desde Firebase
+      firebase.database().ref(`bloquesTextoPorDia/${fecha}/${hora}`).once("value").then(textSnapshot => {
+        const textoPersonalizado = textSnapshot.val() || `${hora}`;
 
-// 🔴 Botón rojo "-" oculto por defecto
-const botonMenos = document.createElement("button");
-botonMenos.textContent = "x";
-botonMenos.className = "botonmenos";
-botonMenos.style.backgroundColor = "red";
-botonMenos.style.color = "white";
-botonMenos.style.border = "none";
-botonMenos.style.borderRadius = "3px";
-botonMenos.style.padding = "5px 10px";
-botonMenos.style.marginRight = "10px";
+        // 🧱 Crear el bloque completo dentro del callback
+        const bloque = document.createElement("div");
+        bloque.classList.add("bloqueHora");
 
-botonMenos.title = "Eliminar una persona de esta hora";
+        // 🕒 Texto de la hora
+        const textoHora = document.createElement("span");
+        textoHora.className = "horaTexto";
+        textoHora.textContent = hora;
 
-// 🧮 Contador con estilo rojo/blanco
-const contador = document.createElement("span");
+        // 🧮 Contador
+        const contador = document.createElement("span");
+        const idContador = `contador-${hora.replace(/[^0-9]/g, "")}`;
+        contador.id = idContador;
+        contador.className = cantidadReservas >= capacidadMaxima ? "contadorLleno" : "contadorActivo";
+        contador.innerHTML = `
+          <span class="contadorIzquierda" style="color:red; font-weight:bold;">${cantidadReservas}</span>
+          <span class="contadorDerecha" style="color:white;">/10 👤|</span>
+        `;
 
-// Generar un ID único basado en la hora (sin espacios ni dos puntos)
-const idContador = `contador-${hora.replace(/[^0-9]/g, "")}`;
-contador.id = idContador;
+        // 🔴 Botón rojo "-"
+        const botonMenos = document.createElement("button");
+        botonMenos.textContent = "x";
+        botonMenos.className = "botonmenos";
+        botonMenos.style.backgroundColor = "red";
+        botonMenos.style.color = "white";
+        botonMenos.style.border = "none";
+        botonMenos.style.borderRadius = "3px";
+        botonMenos.style.padding = "5px 10px";
+        botonMenos.style.marginRight = "10px";
+        botonMenos.title = "Eliminar una persona de esta hora";
 
-contador.className = cantidadReservas >= capacidadMaxima ? "contadorLleno" : "contadorActivo";
-contador.innerHTML = `
-  <span class="contadorIzquierda" style="color:red; font-weight:bold;">${cantidadReservas}</span>
-  <span class="contadorDerecha" style="color:white;">/10 👤|</span>
-`;
-
-
-// 🕒 Texto de la hora
-const textoHora = document.createElement("span");
-textoHora.className = "horaTexto";
-textoHora.textContent = hora;
-
-// ➖ Acción del botón menos
-botonMenos.onclick = (e) => {
-  e.stopPropagation();
-
-  const ref = firebase.database().ref(`reservasPorDia/${fecha}/${hora}`);
-  ref.once("value").then(snapshot => {
-    const reservas = snapshot.val() || {};
-    const nombres = Object.keys(reservas);
-
-    if (nombres.length > 0) {
-      const nombreAEliminar = nombres[0];
-
-      firebase.database().ref(`reservasPorDia/${fecha}/${hora}/${nombreAEliminar}`).remove()
-        .then(() => {
-          // 🔄 Actualizar solo este contador
-          firebase.database().ref(`reservasPorDia/${fecha}/${hora}`).once("value").then(snapshot => {
-            const nuevasReservas = snapshot.val() || {};
-            const nuevaCantidad = Object.keys(nuevasReservas).length;
-
-            contador.innerHTML = `
-              <span class="contadorIzquierda" style="color:red; font-weight:bold;">${nuevaCantidad}</span>
-              <span class="contadorDerecha" style="color:white;">/10 👤|</span>
-            `;
-            contador.className = nuevaCantidad >= capacidadMaxima ? "contadorLleno" : "contadorActivo";
+        botonMenos.onclick = (e) => {
+          e.stopPropagation();
+          const ref = firebase.database().ref(`reservasPorDia/${fecha}/${hora}`);
+          ref.once("value").then(snapshot => {
+            const reservas = snapshot.val() || {};
+            const nombres = Object.keys(reservas);
+            if (nombres.length > 0) {
+              const nombreAEliminar = nombres[0];
+              firebase.database().ref(`reservasPorDia/${fecha}/${hora}/${nombreAEliminar}`).remove()
+                .then(() => {
+                  firebase.database().ref(`reservasPorDia/${fecha}/${hora}`).once("value").then(snapshot => {
+                    const nuevasReservas = snapshot.val() || {};
+                    const nuevaCantidad = Object.keys(nuevasReservas).length;
+                    contador.innerHTML = `
+                      <span class="contadorIzquierda" style="color:red; font-weight:bold;">${nuevaCantidad}</span>
+                      <span class="contadorDerecha" style="color:white;">/10 👤|</span>
+                    `;
+                    contador.className = nuevaCantidad >= capacidadMaxima ? "contadorLleno" : "contadorActivo";
+                  });
+                });
+            }
           });
-        });
-    }
-  });
+        };
+
+        // 🔤 Texto personalizado
+        const textoBloque = document.createElement("span");
+        textoBloque.textContent = textoPersonalizado;
+        textoBloque.className = "textoBloque";
+
+        // ✏️ Botón de edición
+        const botonEditar = document.createElement("button");
+botonEditar.textContent = "✏️ Editar";
+botonEditar.className = "botonEditarTexto";
+botonEditar.style.marginLeft = "10px";
+botonEditar.onclick = (e) => {
+  e.stopPropagation(); // 🔒 evita que se active el clic del bloque
+  abrirVentanaEditarTexto(fecha, hora, textoBloque.textContent, textoBloque);
 };
 
 
-// 🧱 Armar el bloque visual
-bloque.appendChild(textoHora);
-bloque.appendChild(contador);
-bloque.appendChild(botonMenos);
+        // 🟢 Acción para agendar si hay espacio
+        if (cantidadReservas < capacidadMaxima) {
+          bloque.classList.add("horaLibre");
+          bloque.onclick = () => {
+            const nombrePersona = "usuario_" + Math.floor(Math.random() * 10000);
+const ref = firebase.database().ref(`reservasPorDia/${fecha}/${hora}`);
 
-// 🟢 Acción para agendar si hay espacio
-if (cantidadReservas < capacidadMaxima) {
-  bloque.classList.add("horaLibre");
-  bloque.onclick = () => {
-    const nombrePersona = "usuario_" + Math.floor(Math.random() * 10000);
-    const ref = firebase.database().ref(`reservasPorDia/${fecha}/${hora}`);
+ref.once('value').then(snapshot => {
+  const reservasActuales = snapshot.val() || {};
 
-    ref.once('value').then(snapshot => {
-      const reservasActuales = snapshot.val() || {};
-      if (Object.keys(reservasActuales).length < capacidadMaxima) {
-        const nuevaReserva = {};
-        nuevaReserva[nombrePersona] = true;
-        ref.update(nuevaReserva).then(() => abrirVentanaHorarios(fecha));
-      }
+  if (!reservasActuales[nombrePersona]) {
+    const nuevaReserva = {};
+    nuevaReserva[nombrePersona] = true;
+    ref.update(nuevaReserva).then(() => {
+      
+      abrirVentanaHorarios(fecha);
     });
+  } else {
+    // ✅ Ya estaba reservado, pero igual enviamos el mensaje
+    abrirVentanaHorarios(fecha);
+  }
+});
 
-    document.getElementById("hora").value = hora;
-    fechaInput.value = fecha;
-    document.getElementById("modal-hora-personalizada").classList.remove("hidden");
-    ventanaHorarios.style.display = "none";
-  };
-} else {
-  bloque.classList.add("horaOcupada");
-}
 
-      horariosDisponibles.appendChild(bloque);
+            document.getElementById("hora").value = hora;
+            fechaInput.value = fecha;
+            document.getElementById("modal-hora-personalizada").classList.remove("hidden");
+            ventanaHorarios.style.display = "none";
+          };
+        } else {
+          bloque.classList.add("horaOcupada");
+        }
+
+        // 🧩 Armar el bloque visual
+        bloque.appendChild(contador);
+        bloque.appendChild(botonMenos);
+        bloque.appendChild(textoBloque);
+        bloque.appendChild(botonEditar);
+        horariosDisponibles.appendChild(bloque);
+      });
     });
 
     // ✅ Verificar si todas las horas están llenas
@@ -3155,7 +3208,6 @@ if (cantidadReservas < capacidadMaxima) {
 
 
 
-
         cerrarVentana.onclick = () => {
             ventanaHorarios.style.display = "none";
         };
@@ -3164,20 +3216,23 @@ if (cantidadReservas < capacidadMaxima) {
             if (e.target === ventanaHorarios) ventanaHorarios.style.display = "none";
         };
 
-        function enviarMensajeWhatsApp() {
-            const nombre = document.getElementById("nombre")?.value.trim();
-            const fecha = fechaInput.value;
-            const hora = document.getElementById("hora").value;
+      function enviarPorWhatsApp() {
+  const nombre = document.getElementById("nombre")?.value.trim();
+  const fecha = fechaInput.value;
+  const hora = document.getElementById("hora").value;
 
-            if (!nombre || !fecha || !hora) {
-                alert("Faltan datos: asegúrate de ingresar nombre, fecha y hora");
-                return;
-            }
-            const numeroDestino = "56944680449";
-            const mensaje = `Hola, soy ${nombre}. Quiero reservar para el día ${fecha} a las ${hora}.`;
-            const url = `https://wa.me/${numeroDestino}?text=${encodeURIComponent(mensaje)}`;
-            window.open(url, "_blank");
-        }
+  if (!nombre || !fecha || !hora) {
+    alert("Faltan datos: asegúrate de ingresar nombre, fecha y hora");
+    return;
+  }
+
+  const numeroDestino = "56944680449";
+  const mensaje = `Hola, soy ${nombre}. Quiero reservar para el día ${fecha} a las ${hora}.`;
+  const url = `https://wa.me/${numeroDestino}?text=${encodeURIComponent(mensaje)}`;
+  window.open(url, "_blank");
+}
+
+
 
         // NUEVA FUNCIONALIDAD: GESTIÓN DE HORARIOS PERSONALIZADOS
 
