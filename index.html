@@ -76,12 +76,19 @@ let diasDeLaSemanaBloqueados = []; // debe ser let para poder actualizarla
       console.error('Error al enviar la notificación:', error);
     }
   }
+
+
+  function forzarRecargaGlobal() {
+  firebase.database().ref("recargarPagina").set({
+    reload: true,
+    timestamp: Date.now()
+  });
+}
+
 </script>
 
 <button onclick="enviar()" hidden>Enviar notificación</button>
-
-
-        Selecciona un día
+    Selecciona un día
       <div class="dias-semana"></div>
 <div id="cuadroCalendario"></div>
     <script>
@@ -2343,6 +2350,14 @@ const horariosPorDia = {
             });
             actualizarBarraMes();
         });
+firebase.database().ref("recargarPagina").on("value", snapshot => {
+  const data = snapshot.val();
+  if (data?.reload) {
+    console.log("🔁 Recargando por orden remota...");
+    firebase.database().ref("recargarPagina").set({ reload: false }); // reset
+    location.reload();
+  }
+});
 
         // Escuchar días bloqueados en tiempo real
         diasBloqueadosRef.on("value", snapshot => {
@@ -3026,6 +3041,7 @@ ref.once('value').then(snapshot => {
       abrirVentanaHorarios(fecha);
       reservarHora();
       location.reload();
+      forzarRecargaGlobal();
     });
   } else {
     // ✅ Ya estaba reservado, pero igual enviamos el mensaje
@@ -3100,6 +3116,10 @@ ref.once('value').then(snapshot => {
   const url = `https://wa.me/${numeroDestino}?text=${encodeURIComponent(mensaje)}`;
   window.open(url, "_blank");
 }
+// NO SIRVE:
+
+
+
 
 
 
