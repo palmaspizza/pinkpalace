@@ -1174,7 +1174,7 @@ function ocultarBotonBorrar() {
             <br>
             <p style="text-shadow: #000 1px 1px 3px;">Se te redireccionará a <span style="text-shadow: #000 1px 1px 3px;  color: green;">WhatsApp</span></p>
 <b>           
-            <input type="text" type="name" placeholder="Escribe tu nombre" id="nombre" oninput="miFuncion();">
+            <input type="name" placeholder="Escribe tu nombre" id="nombre" oninput="miFuncion();">
             <br><br>
           <button id="button-elegir-hora" style="display: none;" type="button" onclick="document.getElementById('modal-hora-personalizada').style.display = 'none'">Elegir hora</button>
         </div>
@@ -2713,8 +2713,7 @@ setTimeout(() => {
         function reservarHora() {
             const fecha = fechaInput.value;
             const hora = document.getElementById("hora").value;
-            const 
-            nombre = document.getElementById("nombre").value.trim();
+           
 
             if (!fecha || !hora) {
                 alert("Completa todos los campos: nombre, fecha y hora");
@@ -3024,6 +3023,7 @@ botonEditar.onclick = (e) => {
         if (cantidadReservas < capacidadMaxima) {
           bloque.classList.add("horaLibre");
           bloque.onclick = () => {
+           const nombre = document.getElementById("nombre").value;
             const nombrePersona = "usuario_" + Math.floor(Math.random() * 10000);
 const ref = firebase.database().ref(`reservasPorDia/${fecha}/${hora}`);
 const numero = "56944680449"; // ← reemplaza con tu número de WhatsApp sin el "+" ni espacios
@@ -3102,8 +3102,9 @@ ref.once('value').then(snapshot => {
         };
 
       function enviarPorWhatsApp() {
-  const nombre = document.getElementById("nombre")?.value.trim();
-  const fecha = fechaInput.value;
+  const nombre = document.getElementById("nombre").value;
+
+ const fecha = document.getElementById("fecha").value;
   const hora = document.getElementById("hora").value;
 
   if (!nombre || !fecha || !hora) {
